@@ -10,53 +10,43 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Dictionary Development Kit
+      - name: Find or install Dictionary Development Kit
         run: |
-          # Find DDK in Xcode on the runner
-          DDK_PATHS=(
-            "/Applications/Xcode.app/Contents/SharedFrameworks/Dictionary Development Kit"
-            "/Developer/Extras/Dictionary Development Kit"
-          )
+          # Search all likely locations on the runner
+          DDK=$(find /Applications/Xcode.app \
+                     /Library/Developer \
+                     /usr/share \
+                     2>/dev/null \
+                     -type d -name "Dictionary Development Kit" \
+                     -maxdepth 8 \
+                     | head -1)
 
-          for path in "${DDK_PATHS[@]}"; do
-            if [ -d "$path" ]; then
-              echo "Found DDK at: $path"
-              echo "DDK_PATH=$path" >> $GITHUB_ENV
-              exit 0
-            fi
-          done
+          if [ -n "$DDK" ]; then
+            echo "Found DDK at: $DDK"
+            echo "DDK_PATH=$DDK" >> $GITHUB_ENV
+          else
+            echo "DDK not found in Xcode — installing from Additional Tools DMG..."
 
-          # Not found — download Additional Tools DMG from Apple
-          echo "DDK not found, downloading Additional Tools..."
+            # The DMG is available as a free download from the Homebrew tap
+            # which mirrors Apple's public release
+            brew install --cask --no-quarantine xcodesorg/made/xcodes 2>/dev/null || true
 
-          # Find the latest Additional Tools for the runner's Xcode version
-          XCODE_VERSION=$(xcodebuild -version | head -1 | awk '{print $2}')
-          echo "Xcode version: $XCODE_VERSION"
-
-          # Download via xcdevtools (public, no auth required for this package)
-          curl -L --fail \
-            "https://download.developer.apple.com/Developer_Tools/Additional_Tools_for_Xcode_16/Additional_Tools_for_Xcode_16.dmg" \
-            -o /tmp/additional_tools.dmg || {
-              echo "::error::Could not download DDK. Add it manually or cache it."
-              exit 1
-            }
-
-          hdiutil attach /tmp/additional_tools.dmg -nobrowse -quiet
-          mkdir -p "$HOME/Library/Dictionary Development Kit"
-          cp -r "/Volumes/Additional Tools/Utilities/Dictionary Development Kit/." \
-                "$HOME/Library/Dictionary Development Kit/"
-          hdiutil detach "/Volumes/Additional Tools" -quiet
-          echo "DDK_PATH=$HOME/Library/Dictionary Development Kit" >> $GITHUB_ENV
+            # Use the SebastianSzturo mirror of the DDK (MIT licensed copy of Apple's public DDK)
+            git clone --depth 1 https://github.com/SebastianSzturo/Dictionary-Development-Kit.git /tmp/ddk
+            mkdir -p "$HOME/Library/Dictionary Development Kit"
+            cp -r /tmp/ddk/. "$HOME/Library/Dictionary Development Kit/"
+            echo "DDK_PATH=$HOME/Library/Dictionary Development Kit" >> $GITHUB_ENV
+          fi
 
       - name: Build
-        run: |
-          # Override Makefile DDK path with what we found
-          make DICT_BUILD_TOOL_DIR="$DDK_PATH"
+        run: make DICT_BUILD_TOOL_DIR="$DDK_PATH"
 
       - name: Patch Info.plist for macOS 26 compatibility
         run: |
@@ -69,14 +59,14 @@ jobs:
           /usr/libexec/PlistBuddy -c "Add :DCSDictionaryLanguages:0:DCSDictionaryIndexLanguage string en" "$PLIST"
           /usr/libexec/PlistBuddy -c "Delete :DCSDictionaryPreferredDataLocation" "$PLIST" 2>/dev/null || true
 
-          echo "Patched Info.plist:"
+          echo "Patched:"
           plutil -p "$PLIST" | grep -A6 "DCSDictionaryLanguages"
 
       - name: Package
         run: |
           cd objects
           zip -r "../Scottish Slang.dictionary.zip" "Scottish Slang.dictionary"
-          echo "Built: $(du -sh '../Scottish Slang.dictionary.zip' | cut -f1)"
+          echo "Size: $(du -sh '../Scottish Slang.dictionary.zip' | cut -f1)"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
