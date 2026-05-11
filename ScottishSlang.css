@@ -1,0 +1,24 @@
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    margin: 0;
+    padding: 0;
+}
+
+.entry {
+    padding: 6px 10px;
+}
+
+p.headword {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1a3a5c;
+    margin: 0 0 4px 0;
+    font-family: "Georgia", serif;
+}
+
+p.definition {
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.5;
+}

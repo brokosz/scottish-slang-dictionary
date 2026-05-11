@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.scottish.slang.dictionary</string>
+	<key>CFBundleName</key>
+	<string>Scottish Slang</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>DCSDictionaryLanguages</key>
+	<array>
+		<string>en</string>
+	</array>
+	<key>DCSDictionaryManufacturerName</key>
+	<string>Scottish Slang Dictionary</string>
+	<key>DCSDictionaryPreferredDataLocation</key>
+	<string>Scottish Slang.dictionary</string>
+</dict>
+</plist>
