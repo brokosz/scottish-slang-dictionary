@@ -59,7 +59,6 @@ bash patch_and_install.sh
 | Term | Definition |
 |------|-----------|
 | aye | yes |
-| bawbag | scrotum; pejorative |
 | baltic | freezing cold |
 | braw | good looking, beautiful; really nice |
 | dreich | damp, overcast, wet |
