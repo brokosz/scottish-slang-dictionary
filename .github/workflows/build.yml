@@ -3,8 +3,7 @@ name: Build Dictionary
 on:
   push:
     branches: [main]
-  release:
-    types: [created]
+    tags: ["v*"]
   workflow_dispatch:
 
 permissions:
@@ -32,7 +31,7 @@ jobs:
           if [ -n "$DDK" ]; then
             echo "Found DDK at: $DDK"
           else
-            echo "DDK not found in Xcode — cloning mirror..."
+            echo "DDK not found — cloning mirror..."
             git clone --depth 1 https://github.com/SebastianSzturo/Dictionary-Development-Kit.git /tmp/ddk
             mkdir -p "$HOME/Library/Dictionary Development Kit"
             cp -r /tmp/ddk/. "$HOME/Library/Dictionary Development Kit/"
@@ -66,12 +65,24 @@ jobs:
           path: "Scottish Slang.dictionary.zip"
           retention-days: 30
 
-      - name: Attach to release
-        if: github.event_name == 'release'
+      - name: Create or update release with asset
+        if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
+          TAG="${GITHUB_REF#refs/tags/}"
+          # Create release if it doesn't exist, then upload asset
+          gh release create "$TAG" \
+            --repo "${{ github.repository }}" \
+            --title "$TAG" \
+            --notes "Pre-built \`.dictionary\` bundle — download and unzip into \`~/Library/Dictionaries/\`
+
+## Install
+\`\`\`bash
+curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/install.sh | bash
+\`\`\`" \
+            2>/dev/null || true
+          gh release upload "$TAG" \
             "Scottish Slang.dictionary.zip" \
             --repo "${{ github.repository }}" \
             --clobber
