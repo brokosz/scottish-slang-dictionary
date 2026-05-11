@@ -24,7 +24,6 @@ jobs:
         run: |
           DDK=$(find /Applications/Xcode.app \
                      /Library/Developer \
-                     /usr/share \
                      2>/dev/null \
                      -type d -name "Dictionary Development Kit" \
                      -maxdepth 8 \
@@ -32,14 +31,14 @@ jobs:
 
           if [ -n "$DDK" ]; then
             echo "Found DDK at: $DDK"
-            echo "DDK_PATH=$DDK" >> $GITHUB_ENV
           else
-            echo "DDK not found — cloning mirror..."
+            echo "DDK not found in Xcode — cloning mirror..."
             git clone --depth 1 https://github.com/SebastianSzturo/Dictionary-Development-Kit.git /tmp/ddk
             mkdir -p "$HOME/Library/Dictionary Development Kit"
             cp -r /tmp/ddk/. "$HOME/Library/Dictionary Development Kit/"
-            echo "DDK_PATH=$HOME/Library/Dictionary Development Kit" >> $GITHUB_ENV
+            DDK="$HOME/Library/Dictionary Development Kit"
           fi
+          echo "DDK_PATH=$DDK" >> $GITHUB_ENV
 
       - name: Build
         run: make DICT_BUILD_TOOL_DIR="$DDK_PATH"
@@ -47,7 +46,6 @@ jobs:
       - name: Patch Info.plist for macOS 26 compatibility
         run: |
           PLIST="./objects/Scottish Slang.dictionary/Contents/Info.plist"
-
           /usr/libexec/PlistBuddy -c "Delete :DCSDictionaryLanguages" "$PLIST"
           /usr/libexec/PlistBuddy -c "Add :DCSDictionaryLanguages array" "$PLIST"
           /usr/libexec/PlistBuddy -c "Add :DCSDictionaryLanguages:0 dict" "$PLIST"
