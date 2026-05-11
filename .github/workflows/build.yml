@@ -19,7 +19,6 @@ jobs:
 
       - name: Find or install Dictionary Development Kit
         run: |
-          # Search all likely locations on the runner
           DDK=$(find /Applications/Xcode.app \
                      /Library/Developer \
                      /usr/share \
@@ -32,13 +31,7 @@ jobs:
             echo "Found DDK at: $DDK"
             echo "DDK_PATH=$DDK" >> $GITHUB_ENV
           else
-            echo "DDK not found in Xcode — installing from Additional Tools DMG..."
-
-            # The DMG is available as a free download from the Homebrew tap
-            # which mirrors Apple's public release
-            brew install --cask --no-quarantine xcodesorg/made/xcodes 2>/dev/null || true
-
-            # Use the SebastianSzturo mirror of the DDK (MIT licensed copy of Apple's public DDK)
+            echo "DDK not found — cloning mirror..."
             git clone --depth 1 https://github.com/SebastianSzturo/Dictionary-Development-Kit.git /tmp/ddk
             mkdir -p "$HOME/Library/Dictionary Development Kit"
             cp -r /tmp/ddk/. "$HOME/Library/Dictionary Development Kit/"
@@ -59,9 +52,6 @@ jobs:
           /usr/libexec/PlistBuddy -c "Add :DCSDictionaryLanguages:0:DCSDictionaryIndexLanguage string en" "$PLIST"
           /usr/libexec/PlistBuddy -c "Delete :DCSDictionaryPreferredDataLocation" "$PLIST" 2>/dev/null || true
 
-          echo "Patched:"
-          plutil -p "$PLIST" | grep -A6 "DCSDictionaryLanguages"
-
       - name: Package
         run: |
           cd objects
@@ -77,6 +67,10 @@ jobs:
 
       - name: Attach to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: "Scottish Slang.dictionary.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            "Scottish Slang.dictionary.zip" \
+            --repo "${{ github.repository }}" \
+            --clobber
