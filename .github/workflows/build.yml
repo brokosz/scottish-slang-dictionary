@@ -21,13 +21,8 @@ jobs:
 
       - name: Find or install Dictionary Development Kit
         run: |
-          DDK=$(find /Applications/Xcode.app \
-                     /Library/Developer \
-                     2>/dev/null \
-                     -type d -name "Dictionary Development Kit" \
-                     -maxdepth 8 \
-                     | head -1)
-
+          DDK=$(find /Applications/Xcode.app /Library/Developer 2>/dev/null \
+                -type d -name "Dictionary Development Kit" -maxdepth 8 | head -1)
           if [ -n "$DDK" ]; then
             echo "Found DDK at: $DDK"
           else
@@ -65,24 +60,18 @@ jobs:
           path: "Scottish Slang.dictionary.zip"
           retention-days: 30
 
-      - name: Create or update release with asset
+      - name: Attach to release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
-          # Create release if it doesn't exist, then upload asset
           gh release create "$TAG" \
-            --repo "${{ github.repository }}" \
+            --repo "$GITHUB_REPOSITORY" \
             --title "$TAG" \
-            --notes "Pre-built \`.dictionary\` bundle — download and unzip into \`~/Library/Dictionaries/\`
-
-## Install
-\`\`\`bash
-curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/install.sh | bash
-\`\`\`" \
+            --notes "Pre-built .dictionary bundle. See README for install instructions." \
             2>/dev/null || true
           gh release upload "$TAG" \
             "Scottish Slang.dictionary.zip" \
-            --repo "${{ github.repository }}" \
+            --repo "$GITHUB_REPOSITORY" \
             --clobber
