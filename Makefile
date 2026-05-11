@@ -4,7 +4,7 @@ CSS_PATH		=	ScottishSlang.css
 PLIST_PATH		=	ScottishSlang.plist
 DICT_BUILD_OPTS		=
 
-DICT_BUILD_TOOL_DIR	=	$(HOME)/Library/Dictionary Development Kit
+DICT_BUILD_TOOL_DIR	?=	$(HOME)/Library/Dictionary Development Kit
 DICT_BUILD_TOOL_BIN	=	$(DICT_BUILD_TOOL_DIR)/bin
 
 DICT_DEV_KIT_OBJ_DIR	=	./objects

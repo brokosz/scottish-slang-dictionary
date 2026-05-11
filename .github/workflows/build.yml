@@ -1,0 +1,92 @@
+name: Build Dictionary
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dictionary Development Kit
+        run: |
+          # Find DDK in Xcode on the runner
+          DDK_PATHS=(
+            "/Applications/Xcode.app/Contents/SharedFrameworks/Dictionary Development Kit"
+            "/Developer/Extras/Dictionary Development Kit"
+          )
+
+          for path in "${DDK_PATHS[@]}"; do
+            if [ -d "$path" ]; then
+              echo "Found DDK at: $path"
+              echo "DDK_PATH=$path" >> $GITHUB_ENV
+              exit 0
+            fi
+          done
+
+          # Not found — download Additional Tools DMG from Apple
+          echo "DDK not found, downloading Additional Tools..."
+
+          # Find the latest Additional Tools for the runner's Xcode version
+          XCODE_VERSION=$(xcodebuild -version | head -1 | awk '{print $2}')
+          echo "Xcode version: $XCODE_VERSION"
+
+          # Download via xcdevtools (public, no auth required for this package)
+          curl -L --fail \
+            "https://download.developer.apple.com/Developer_Tools/Additional_Tools_for_Xcode_16/Additional_Tools_for_Xcode_16.dmg" \
+            -o /tmp/additional_tools.dmg || {
+              echo "::error::Could not download DDK. Add it manually or cache it."
+              exit 1
+            }
+
+          hdiutil attach /tmp/additional_tools.dmg -nobrowse -quiet
+          mkdir -p "$HOME/Library/Dictionary Development Kit"
+          cp -r "/Volumes/Additional Tools/Utilities/Dictionary Development Kit/." \
+                "$HOME/Library/Dictionary Development Kit/"
+          hdiutil detach "/Volumes/Additional Tools" -quiet
+          echo "DDK_PATH=$HOME/Library/Dictionary Development Kit" >> $GITHUB_ENV
+
+      - name: Build
+        run: |
+          # Override Makefile DDK path with what we found
+          make DICT_BUILD_TOOL_DIR="$DDK_PATH"
+
+      - name: Patch Info.plist for macOS 26 compatibility
+        run: |
+          PLIST="./objects/Scottish Slang.dictionary/Contents/Info.plist"
+
+          /usr/libexec/PlistBuddy -c "Delete :DCSDictionaryLanguages" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :DCSDictionaryLanguages array" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :DCSDictionaryLanguages:0 dict" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :DCSDictionaryLanguages:0:DCSDictionaryDescriptionLanguage string en" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :DCSDictionaryLanguages:0:DCSDictionaryIndexLanguage string en" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Delete :DCSDictionaryPreferredDataLocation" "$PLIST" 2>/dev/null || true
+
+          echo "Patched Info.plist:"
+          plutil -p "$PLIST" | grep -A6 "DCSDictionaryLanguages"
+
+      - name: Package
+        run: |
+          cd objects
+          zip -r "../Scottish Slang.dictionary.zip" "Scottish Slang.dictionary"
+          echo "Built: $(du -sh '../Scottish Slang.dictionary.zip' | cut -f1)"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Scottish-Slang-Dictionary
+          path: "Scottish Slang.dictionary.zip"
+          retention-days: 30
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "Scottish Slang.dictionary.zip"
