@@ -10,13 +10,19 @@ Works with Dictionary.app, three-finger tap lookup, and Spotlight.
 
 ## Easy Install (no DDK required)
 
-1. Download **Scottish Slang.dictionary.zip** from the [latest release](https://github.com/brokosz/scottish-slang-dictionary/releases/latest)
-2. Unzip it
-3. Copy to your Dictionaries folder:
+The CI builds a ready-to-use `.dictionary` bundle on every release. Just run:
+
 ```bash
-cp -r "Scottish Slang.dictionary" ~/Library/Dictionaries/
+curl -fsSL https://raw.githubusercontent.com/brokosz/scottish-slang-dictionary/main/install.sh | bash
 ```
-4. Open **Dictionary.app → Settings** and enable **Scottish Slang**
+
+Or manually:
+1. Download **Scottish Slang.dictionary.zip** from the [latest release](https://github.com/brokosz/scottish-slang-dictionary/releases/latest)
+2. Unzip and copy to your Dictionaries folder:
+```bash
+unzip "Scottish Slang.dictionary.zip" -d ~/Library/Dictionaries/
+```
+3. Open **Dictionary.app → Settings** and enable **Scottish Slang**
 
 ---
 
@@ -69,7 +75,7 @@ bash patch_and_install.sh
 
 ## macOS 26 Compatibility
 
-The Dictionary Development Kit generates a `DCSDictionaryLanguages` plist entry as a plain string, which causes Dictionary.app to crash on macOS 26 (Tahoe). The `patch_and_install.sh` script and the GitHub Actions workflow both fix this automatically by converting it to the dict format macOS 26 expects.
+The Dictionary Development Kit generates a `DCSDictionaryLanguages` plist entry as a plain string, which causes Dictionary.app to crash on macOS 26 (Tahoe). The CI workflow and `patch_and_install.sh` both fix this automatically.
 
 ## Files
 
@@ -80,7 +86,8 @@ The Dictionary Development Kit generates a `DCSDictionaryLanguages` plist entry 
 | `ScottishSlang.plist` | Dictionary metadata |
 | `Makefile` | Builds the dictionary using the DDK |
 | `patch_and_install.sh` | Patches the built plist for macOS 26 and installs |
-| `.github/workflows/build.yml` | GitHub Actions workflow — builds and attaches to releases |
+| `install.sh` | One-liner installer — downloads and installs the latest release |
+| `.github/workflows/build.yml` | CI — builds the `.dictionary` bundle and attaches it to releases |
 
 ## Sources
 
