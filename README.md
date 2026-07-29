@@ -1,10 +1,10 @@
 # Scottish Slang Dictionary for macOS
 
-A custom macOS Dictionary.app dictionary containing 450+ Scottish slang terms and jargon, sourced from the Wiktionary Glossary of Scottish Slang and Jargon.
+A custom macOS Dictionary.app dictionary containing 670+ Scottish slang terms and jargon, sourced from the Wiktionary Glossary of Scottish Slang and Jargon plus a curated set of additional slang, sayings, and insults from around the web.
 
 Works with Dictionary.app, three-finger tap lookup, and Spotlight.
 
-![Build](https://github.com/brokosz/scottish-slang-dictionary/actions/workflows/build.yml/badge.svg) ![Entries](https://img.shields.io/badge/entries-450%2B-green) ![macOS](https://img.shields.io/badge/macOS-Dictionary-blue)
+![Build](https://github.com/brokosz/scottish-slang-dictionary/actions/workflows/build.yml/badge.svg) ![Entries](https://img.shields.io/badge/entries-670%2B-green) ![macOS](https://img.shields.io/badge/macOS-Dictionary-blue)
 
 ---
 
@@ -90,7 +90,14 @@ The Dictionary Development Kit generates a `DCSDictionaryLanguages` plist entry 
 
 ## Sources
 
-Entries sourced from [Wiktionary: Glossary of Scottish slang and jargon](https://en.wiktionary.org/wiki/Appendix:Glossary_of_Scottish_slang_and_jargon), available under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+Entries sourced from [Wiktionary: Glossary of Scottish slang and jargon](https://en.wiktionary.org/wiki/Appendix:Glossary_of_Scottish_slang_and_jargon), available under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), with additional terms compiled from:
+
+- [VisitingScotland: Scottish Slang and Phrases](https://www.visitingscotland.com/discover/culture/scottish-slang)
+- [My Voyage Scotland: Scottish Sayings](https://www.myvoyagescotland.com/scottish-sayings)
+- [YourDictionary: Scottish Slang](https://www.yourdictionary.com/articles/scottish-slang-endearments-insults)
+- [Thought Catalog: 300+ Scottish Slang Terms](https://thoughtcatalog.com/jeremy-london/2018/06/scottish-slang/)
+- [Tartan Vibes Clothing: Scottish Slang Words, Phrases & Insults](https://www.tartanvibesclothing.com/blogs/culture/scottish-slang)
+- [Stooryduster: Glossary of Scottish Words](https://stooryduster.co.uk/scottish-words-glossary/)
 
 ## License
 
